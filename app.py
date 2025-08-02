@@ -87,6 +87,11 @@ The user will ask a question about biodiversity data in BigQuery.
    • If the column is INT64, do NOT wrap the value in quotes.
    • If the column is STRING, wrap the value in single quotes.
 - If the user asks about workshops, include BOTH the total number of workshops AND the workshop topics in the SQL output if columns like workshop1_topic, workshop2_topic, etc. exist.
+- If the user asks about dominant species or TNFD-related insights:
+   • Query any relevant columns such as `dominant_species`, `species_description`, or related biodiversity metrics.
+   • Summarize patterns, e.g., which species dominate by region or customer.
+   • Think about TNFD-style indicators (e.g., species concentration, native vs. non-native balance).
+
 
 User question: {question}
     """
@@ -118,6 +123,13 @@ User question: {question}
             summary_prompt = f"""
 Here is the SQL query result:
 {df.head(10).to_string()}
+
+Write a clear TNFD-informed summary:
+- Highlight what the dominant species are across the dataset.
+- If there are regions or customers with distinct dominant species, mention that.
+- Use TNFD thinking: mention concentration (e.g., “70% of customers are dominated by one species”) and potential risks/opportunities (e.g., native vs. invasive species).
+- If there is no dominant species data, say that clearly instead of summarizing unrelated columns.
+"""
 
 Please write a clear, human-friendly summary:
 - State the total number of workshops if available.
