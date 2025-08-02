@@ -12,7 +12,7 @@ BIGQUERY_CREDS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 bq_client = bigquery.Client.from_service_account_info(json.loads(BIGQUERY_CREDS))
 
 # Get the actual schema from BigQuery
-table = bq_client.get_table("biodiversitychat.biodiversity.biodiversitychat")
+table = bq_client.get_table("biodiversitychat.biodiversity.biodiversitychat_native")
 columns = [schema.name for schema in table.schema]
 
 # Set up OpenAI client
@@ -42,7 +42,7 @@ Rules:
 - Only return a valid BigQuery **STANDARD SQL** query.
 - Return ONLY the query — no explanations, no text like “Here’s the query.”
 - Do NOT use triple backticks (```).
-- Always query this table: `biodiversitychat.biodiversity.biodiversitychat`
+- Always query this table: `biodiversitychat.biodiversity.biodiversitychat_native`
 - Only use these columns when writing the SQL: {', '.join(columns)}
     User question: {question}
     """
