@@ -1,3 +1,8 @@
+try:
+    import db_dtypes
+except ImportError:
+    st.warning("⚠️ The package 'db-dtypes' is required for BigQuery pandas integration.")
+
 import streamlit as st
 import pandas as pd
 import os, json
