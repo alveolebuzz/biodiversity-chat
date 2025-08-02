@@ -10,20 +10,30 @@ try:
 except ImportError:
     st.warning("⚠️ The package 'db-dtypes' is required for BigQuery pandas integration.")
 
-# ---- CUSTOM CSS TO MAKE SEARCH BAR GOLD ----
+# ---- CUSTOM CSS TO FORCE ONLY GOLD ----
 st.markdown(
     """
     <style>
-    /* Target the actual input field */
-    input[type="text"] {
-        border: 2px solid #DAA520 !important;     /* gold border by default */
-        border-radius: 6px;
-        padding: 8px;
-        font-size: 16px;
+    /* Override Streamlit theme primary color to gold */
+    :root {
+        --primary-color: #FFD700 !important;
     }
-    input[type="text"]:focus {
-        border: 2px solid #FFD700 !important;     /* bright gold on focus */
+
+    /* Force all Streamlit input containers to use gold borders */
+    div[data-baseweb="input"] > div {
+        border: 2px solid #DAA520 !important;
+        border-radius: 6px !important;
+    }
+
+    /* When typing/focus, keep gold border and glow */
+    div[data-baseweb="input"] > div:focus-within {
+        border: 2px solid #FFD700 !important;
         box-shadow: 0 0 6px #FFD700 !important;
+    }
+
+    /* Target the actual <input> element directly */
+    input[type="text"] {
+        border: none !important;        /* remove default browser border */
         outline: none !important;
     }
     </style>
