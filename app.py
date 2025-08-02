@@ -11,6 +11,10 @@ BIGQUERY_CREDS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 # Load BigQuery credentials from Streamlit Secrets JSON
 bq_client = bigquery.Client.from_service_account_info(json.loads(BIGQUERY_CREDS))
 
+# Get the actual schema from BigQuery
+table = bq_client.get_table("biodiversitychat.biodiversity.biodiversitychat")
+columns = [schema.name for schema in table.schema]
+
 # Set up OpenAI client
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -39,6 +43,7 @@ Rules:
 - Return ONLY the query — no explanations, no text like “Here’s the query.”
 - Do NOT use triple backticks (```).
 - Always query this table: `biodiversitychat.biodiversity.biodiversitychat`
+- Only use these columns when writing the SQL: {', '.join(columns)}
     User question: {question}
     """
 
