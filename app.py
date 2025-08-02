@@ -129,7 +129,6 @@ Write a clear TNFD-informed summary:
 - If there are regions or customers with distinct dominant species, mention that.
 - Use TNFD thinking: mention concentration (e.g., “70% of customers are dominated by one species”) and potential risks/opportunities (e.g., native vs. invasive species).
 - If there is no dominant species data, say that clearly instead of summarizing unrelated columns.
-"""
 
 Please write a clear, human-friendly summary:
 - State the total number of workshops if available.
