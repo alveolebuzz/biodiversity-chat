@@ -14,12 +14,17 @@ except ImportError:
 st.markdown(
     """
     <style>
-    div[data-baseweb="input"] > div {
-        border-color: #DAA520 !important;   /* gold border by default */
+    /* Target the actual input field */
+    input[type="text"] {
+        border: 2px solid #DAA520 !important;     /* gold border by default */
+        border-radius: 6px;
+        padding: 8px;
+        font-size: 16px;
     }
-    div[data-baseweb="input"] > div:focus-within {
-        box-shadow: 0 0 0 2px #FFD700 !important; /* gold glow when typing */
-        border-color: #FFD700 !important;
+    input[type="text"]:focus {
+        border: 2px solid #FFD700 !important;     /* bright gold on focus */
+        box-shadow: 0 0 6px #FFD700 !important;
+        outline: none !important;
     }
     </style>
     """,
@@ -36,7 +41,7 @@ bq_client = bigquery.Client.from_service_account_info(json.loads(BIGQUERY_CREDS)
 # ---- FETCH SCHEMA FOR GPT ----
 table = bq_client.get_table("biodiversitychat.biodiversity.biodiversitychat_native")
 columns = [schema.name for schema in table.schema]
-column_types = {schema.name: schema.field_type for schema in table.schema}  # NEW: track types
+column_types = {schema.name: schema.field_type for schema in table.schema}  # NEW: type awareness
 
 # ---- OPENAI CLIENT ----
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -45,7 +50,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 st.title("🌱 Biodiversity Data Chat")
 st.write("Ask any question about your biodiversity data stored in BigQuery.")
 
-# Show available columns (for debugging)
+# Show available columns and types for debugging
 st.sidebar.write("📋 Available columns:", columns)
 st.sidebar.write("📂 Column types:", column_types)
 
