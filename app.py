@@ -77,6 +77,7 @@ The user will ask a question about biodiversity data in BigQuery.
 
 ⚠️ Rules for writing SQL:
 - Only return a valid BigQuery STANDARD SQL query.
+- When casting values to INT64, always use SAFE_CAST instead of CAST to avoid errors on bad values like #N/A.
 - Return ONLY the query — no explanations, no comments, no Markdown.
 - Do NOT use triple backticks (```).
 - Always query this table exactly as written: `biodiversitychat.biodiversity.biodiversitychat_native`
