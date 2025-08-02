@@ -31,12 +31,14 @@ if st.button("Ask") and question:
     """
 
     sql_prompt = f"""
-    You are a helpful assistant. The user will ask a natural-language question.
-    Convert it into a BigQuery STANDARD SQL query that works on the table biodiversity_data.
+You are a data assistant. 
+The user will ask a question about biodiversity data in BigQuery. 
 
-    {schema_hint}
-
-    Return ONLY SQL code, nothing else.
+Rules:
+- Only return a valid BigQuery **STANDARD SQL** query.
+- Return ONLY the query — no explanations, no text like “Here’s the query.”
+- Do NOT use triple backticks (```).
+- Always query this table: `biodiversitychat.biodiversity.biodiversity_data`
     User question: {question}
     """
 
