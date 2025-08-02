@@ -1,13 +1,14 @@
-try:
-    import db_dtypes
-except ImportError:
-    st.warning("⚠️ The package 'db-dtypes' is required for BigQuery pandas integration.")
-
 import streamlit as st
 import pandas as pd
 import os, json
 from google.cloud import bigquery
 from openai import OpenAI
+
+# ---- OPTIONAL WARNING IF MISSING DB-DTYPES ----
+try:
+    import db_dtypes
+except ImportError:
+    st.warning("⚠️ The package 'db-dtypes' is required for BigQuery pandas integration.")
 
 # ---- READ KEYS FROM STREAMLIT SECRETS ----
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -16,40 +17,40 @@ BIGQUERY_CREDS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 # Load BigQuery credentials from Streamlit Secrets JSON
 bq_client = bigquery.Client.from_service_account_info(json.loads(BIGQUERY_CREDS))
 
-# Get the actual schema from BigQuery
+# ---- FETCH SCHEMA FOR GPT ----
 table = bq_client.get_table("biodiversitychat.biodiversity.biodiversitychat_native")
 columns = [schema.name for schema in table.schema]
 
-# Set up OpenAI client
+# ---- OPENAI CLIENT ----
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # ---- STREAMLIT UI ----
 st.title("🌱 Biodiversity Data Chat")
 st.write("Ask any question about your biodiversity data stored in BigQuery.")
 
-# User input
+# Show available columns (for debugging, optional)
+st.sidebar.write("📋 Available columns in table:", columns)
+
+# ---- USER INPUT ----
 question = st.text_input("Type your question here:")
 
 if st.button("Ask") and question:
     st.write(f"**Your question:** {question}")
 
-    # 1️⃣ Ask GPT to write SQL
-    schema_hint = """
-    The table is named `biodiversity_data` and may include columns like:
-    building_name, city, date, pesticide, species, count, etc.
-    """
-
+    # ---- GPT PROMPT FOR SQL ----
     sql_prompt = f"""
 You are a data assistant. 
 The user will ask a question about biodiversity data in BigQuery. 
 
-Rules:
+⚠️ Rules for writing SQL:
 - Only return a valid BigQuery **STANDARD SQL** query.
-- Return ONLY the query — no explanations, no text like “Here’s the query.”
+- Return ONLY the query — no explanations, no comments, no Markdown.
 - Do NOT use triple backticks (```).
-- Always query this table: `biodiversitychat.biodiversity.biodiversitychat_native`
-- Only use these columns when writing the SQL: {', '.join(columns)}
-    User question: {question}
+- Always query this table exactly as written: `biodiversitychat.biodiversity.biodiversitychat_native`
+- Only use these exact columns: {', '.join(columns)}
+- If the user asks about workshops, include BOTH the total number of workshops AND the workshop topics in the SQL output if columns like workshop1_topic, workshop2_topic, etc. exist.
+
+User question: {question}
     """
 
     response = client.chat.completions.create(
@@ -58,30 +59,44 @@ Rules:
         temperature=0
     )
 
+    # ---- CLEAN SQL ----
     sql_code = response.choices[0].message.content.strip()
+    sql_code = sql_code.replace("```sql", "").replace("```", "").strip()
     st.code(sql_code, language="sql")
 
-    # 2️⃣ Run the SQL query
+    # ---- RUN THE QUERY ----
     try:
         query_job = bq_client.query(sql_code)
         df = query_job.to_dataframe()
 
-        # Show table in Streamlit
+        # Show results table
         st.subheader("📊 Query Results")
-        st.dataframe(df)
+        if df.empty:
+            st.warning("⚠️ The query returned no data.")
+        else:
+            st.dataframe(df)
 
-        # 3️⃣ Summarize result with GPT
-        summary_prompt = f"Summarize this table in plain English: {df.head(10).to_string()}"
-        summary_response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": summary_prompt}],
-            temperature=0
-        )
-        summary = summary_response.choices[0].message.content
+            # ---- GPT SUMMARY PROMPT ----
+            summary_prompt = f"""
+Here is the SQL query result:
+{df.head(10).to_string()}
 
-        st.subheader("📝 Summary")
-        st.write(summary)
+Please write a clear, human-friendly summary:
+- State the total number of workshops if available.
+- List the workshop topics (if present and not null).
+- If there are no workshops or topics, say that clearly.
+- Keep it short and professional.
+"""
+
+            summary_response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": summary_prompt}],
+                temperature=0
+            )
+            summary = summary_response.choices[0].message.content
+
+            st.subheader("📝 Summary")
+            st.write(summary)
 
     except Exception as e:
         st.error(f"❌ There was an error running the query: {e}")
-
