@@ -38,7 +38,7 @@ Rules:
 - Only return a valid BigQuery **STANDARD SQL** query.
 - Return ONLY the query — no explanations, no text like “Here’s the query.”
 - Do NOT use triple backticks (```).
-- Always query this table: `biodiversitychat.biodiversity.biodiversity_data`
+- Always query this table: `biodiversitychat.biodiversity.biodiversitychat`
     User question: {question}
     """
 
